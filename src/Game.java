@@ -3,18 +3,17 @@ import java.util.ArrayList;
 public class Game {
 
     private static final int TIMEOUT = 50;
-    private static final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final int ROOM_WIDTH = 5;
+    private static final int ROOM_HEIGHT = 5;
+    private static final int INITIAL_PLAYER_COUNT = 5;
+    private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private Room room;
     private Ball ball;
-    private ArrayList<Player> players = new ArrayList<>();
-
     public void main() {
-        this.room = new Room(5, 5);
+        this.room = new Room(ROOM_WIDTH, ROOM_HEIGHT);
         this.ball = new Ball(room, 2, 2);
-        for (int i = 0; i < 10; i++) {
-            Player tempPlayer = new Player(alphabet.substring(i, i + 1), room);
-            tempPlayer.start();
-            this.players.add(tempPlayer);
+        for (int i = 0; i < INITIAL_PLAYER_COUNT; i++) {
+            new Player(ALPHABET.substring(i, i + 1), room).start();
         }
         this.ball.start();
 
