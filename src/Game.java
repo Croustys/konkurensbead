@@ -9,10 +9,12 @@ public class Game {
     private ArrayList<Player> players = new ArrayList<>();
 
     public void main() {
-        this.room = new Room(10 ,10);
+        this.room = new Room(4 ,5);
         this.ball = new Ball(room, 0, 0);
         for(int i = 0; i < 10; i++) {
-            this.players.add(new Player(alphabet.substring(i, i+1),room));
+            Player tempPlayer = new Player(alphabet.substring(i, i+1),room);
+            tempPlayer.run();
+            this.players.add(tempPlayer);
         }
 
         while(room.getPlayerCount() > 1) {

@@ -2,7 +2,7 @@ public class Room {
     private int width;
     private int height;
     private Object[][] matrix;
-    private int playerCount = 10;
+    private int playerCount = 0;
 
     public Room(int width, int height) {
         this.width = width;
@@ -32,12 +32,25 @@ public class Room {
         System.out.flush();
         System.out.print("\u001B[0;0H");
 
+        System.out.print("+");
+        for (int i = 0; i < width; i++) {
+            System.out.print("-");
+        }
+        System.out.println("+");
+
         for (int i = 0; i < height; i++) {
+            System.out.print("|");
             for (int j = 0; j < width; j++) {
                 System.out.print(matrix[i][j].toString());
             }
-            System.out.println();
+            System.out.println("|");
         }
+
+        System.out.print("+");
+        for (int i = 0; i < width; i++) {
+            System.out.print("-");
+        }
+        System.out.println("+");
     }
 
     public Object getObjectAtPosition(int x, int y) {
