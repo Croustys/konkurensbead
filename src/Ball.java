@@ -40,6 +40,7 @@ class Ball extends Thread {
                         if (this.room.getObjectAtPosition(nextX, nextY) instanceof Player) {
                             ((Player) this.room.getObjectAtPosition(nextX, nextY)).gameOver();
                             this.room.removeObject(nextX, nextY);
+                            this.isMoving = false;
                         }
                         this.room.moveObject(this.X, this.Y, nextX, nextY);
                         this.X = nextX;

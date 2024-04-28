@@ -52,23 +52,17 @@ class Player extends Thread {
         int newPlayerX = this.X + direction[0];
         int newPlayerY = this.Y + direction[1];
 
-        boolean moved = false;
-
         if (newPlayerX >= 0 && newPlayerX < roomWidth && newPlayerY >= 0 && newPlayerY < roomHeight) {
             synchronized (room) {
                 if (room.getObjectAtPosition(newPlayerX, newPlayerY) instanceof Empty) {
                     room.moveObject(this.X, this.Y, newPlayerX, newPlayerY);
                     this.X = newPlayerX;
                     this.Y = newPlayerY;
-                    moved = true;
+                    Object ball = this.getBallNearby();
+                    if (ball instanceof Ball && !((Ball) ball).isMoving()) {
+                        this.kick((Ball) ball);
+                    }
                 }
-            }
-
-        }
-        if (moved) {
-            Object ball = this.getBallNearby();
-            if (ball instanceof Ball && !((Ball) ball).isMoving()) {
-                this.kick((Ball) ball);
             }
         }
     }
@@ -100,14 +94,25 @@ class Player extends Thread {
     }
 
     private void kick(Ball b) {
+        int ballX = b.getX();
+        int ballY = b.getY();
+
         Random random = new Random();
         int[][] directions = {{0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}};
 
-        int[] direction = directions[random.nextInt(directions.length)];
+        int randomIndex = random.nextInt(directions.length);
+        int[] direction = directions[randomIndex];
         int newX = direction[0];
         int newY = direction[1];
 
-        if(b.getX() + newX == this.X && b.getY() + newY == this.Y) return;
+        if (ballX + newX == this.X && ballY + newY == this.Y) {
+            int oldRandom = randomIndex;
+            do {
+                randomIndex = random.nextInt(directions.length);
+            } while (randomIndex == oldRandom);
+        }
+
+        direction = directions[randomIndex];
 
         b.throwBall(direction[0], direction[1]);
     }
