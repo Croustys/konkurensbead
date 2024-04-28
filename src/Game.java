@@ -5,7 +5,7 @@ public class Game {
     private static final int TIMEOUT = 50;
     private static final int ROOM_WIDTH = 5;
     private static final int ROOM_HEIGHT = 5;
-    private static final int INITIAL_PLAYER_COUNT = 5;
+    private static final int INITIAL_PLAYER_COUNT = 10;
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private Room room;
     private Ball ball;
