@@ -12,12 +12,14 @@ class Ball extends Thread {
         this.room = room;
         this.X = x;
         this.Y = y;
+        this.room.placeObject(this, x, y);
     }
 
+    @Override
     public void run() {
         while (this.room.getPlayerCount() > 1) {
             try {
-                Thread.sleep(TIMEOUT);
+                sleep(TIMEOUT);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
