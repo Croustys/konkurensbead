@@ -6,12 +6,14 @@ class Ball extends Thread {
     private int Y;
     private int directionX;
     private int directionY;
-    private boolean isMoving;
+    private boolean isMoving = false;
 
     public Ball(Room room, int x, int y) {
         this.room = room;
         this.X = x;
         this.Y = y;
+        this.directionX = x;
+        this.directionY = y;
         this.room.placeObject(this, x, y);
     }
 
@@ -24,14 +26,29 @@ class Ball extends Thread {
                 e.printStackTrace();
             }
 
-            if(isMoving) {
-                // if touching wall, stop moving
+            if (isMoving) {
+                int width = this.room.getWidth();
+                int height = this.room.getHeight();
+                if (this.X == 0 || this.X == width - 1 || this.Y == 0 || this.Y == height - 1) {
+                    this.isMoving = false;
+                } else {
+                    int nextX = this.X + this.directionX;
+                    int nextY = this.Y + this.directionY;
+
+                    if (this.room.getObjectAtPosition(nextX, nextY) instanceof Player) {
+                        this.room.removeObject(nextX, nextY);
+                        this.room.moveObject(this.X, this.Y, nextX, nextY);
+                        this.X = nextX;
+                        this.Y = nextY;
+                    }
+                }
+
             }
 
         }
     }
 
-    public void throwBall(int directionX, int directionY) {
+    public synchronized void throwBall(int directionX, int directionY) {
         this.directionX = directionX;
         this.directionY = directionY;
         isMoving = true;
