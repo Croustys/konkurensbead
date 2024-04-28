@@ -4,7 +4,7 @@ class Player extends Thread {
     private static final int TIMEOUT = 100;
 
     private final Room room;
-    private boolean isActive = true;
+    public boolean isActive = true;
     private int X;
     private int Y;
 
@@ -18,13 +18,18 @@ class Player extends Thread {
     @Override
     public void run() {
         Random random = new Random();
-        this.X = random.nextInt(this.room.getWidth() - 1);
-        this.Y = random.nextInt(this.room.getHeight() - 1);
+        int roomWidth = this.room.getWidth();
+        int roomHeight = this.room.getHeight();
 
-        if (this.room.getObjectAtPosition(this.X, this.Y) instanceof Ball) {
-            return;
+        synchronized (room) {
+            do {
+                this.X = random.nextInt(roomWidth);
+                this.Y = random.nextInt(roomHeight);
+            } while (this.room.getObjectAtPosition(this.X, this.Y) instanceof Player || this.room.getObjectAtPosition(this.X, this.Y) instanceof Ball);
+
+            this.room.placeObject(this, this.X, this.Y);
         }
-        this.room.placeObject(this, this.X, this.Y);
+
         while (this.isActive) {
             try {
                 sleep(TIMEOUT);
@@ -33,7 +38,6 @@ class Player extends Thread {
             }
             this.move();
         }
-        this.room.removeObject(this.X, this.Y);
     }
 
     private void move() {
@@ -51,12 +55,15 @@ class Player extends Thread {
         boolean moved = false;
 
         if (newPlayerX >= 0 && newPlayerX < roomWidth && newPlayerY >= 0 && newPlayerY < roomHeight) {
-            if (room.getObjectAtPosition(newPlayerX, newPlayerY) instanceof Empty) {
-                room.moveObject(this.X, this.Y, newPlayerX, newPlayerY);
-                this.X = newPlayerX;
-                this.Y = newPlayerY;
-                moved = true;
+            synchronized (room) {
+                if (room.getObjectAtPosition(newPlayerX, newPlayerY) instanceof Empty) {
+                    room.moveObject(this.X, this.Y, newPlayerX, newPlayerY);
+                    this.X = newPlayerX;
+                    this.Y = newPlayerY;
+                    moved = true;
+                }
             }
+
         }
         if (moved) {
             Object ball = this.getBallNearby();
@@ -67,27 +74,29 @@ class Player extends Thread {
     }
 
     private Object getBallNearby() {
-        int roomWidth = this.room.getWidth();
-        int roomHeight = this.room.getHeight();
+        synchronized (room) {
+            int roomWidth = this.room.getWidth();
+            int roomHeight = this.room.getHeight();
 
-        Object top = (this.Y > 0) ? this.room.getObjectAtPosition(this.X, this.Y - 1) : null;
-        if (top instanceof Ball) {
-            return top;
-        }
-        Object right = (this.X < roomWidth - 1) ? this.room.getObjectAtPosition(this.X + 1, this.Y) : null;
-        if (right instanceof Ball) {
-            return right;
-        }
-        Object bottom = (this.Y < roomHeight - 1) ? this.room.getObjectAtPosition(this.X, this.Y + 1) : null;
-        if (bottom instanceof Ball) {
-            return bottom;
-        }
-        Object left = (this.X > 0) ? this.room.getObjectAtPosition(this.X - 1, this.Y) : null;
-        if (left instanceof Ball) {
-            return left;
+            Object top = (this.Y > 0) ? this.room.getObjectAtPosition(this.X, this.Y - 1) : null;
+            if (top instanceof Ball) {
+                return top;
+            }
+            Object right = (this.X < roomWidth - 1) ? this.room.getObjectAtPosition(this.X + 1, this.Y) : null;
+            if (right instanceof Ball) {
+                return right;
+            }
+            Object bottom = (this.Y < roomHeight - 1) ? this.room.getObjectAtPosition(this.X, this.Y + 1) : null;
+            if (bottom instanceof Ball) {
+                return bottom;
+            }
+            Object left = (this.X > 0) ? this.room.getObjectAtPosition(this.X - 1, this.Y) : null;
+            if (left instanceof Ball) {
+                return left;
+            }
+            return null;
         }
 
-        return null;
     }
 
     private void kick(Ball b) {
@@ -95,10 +104,16 @@ class Player extends Thread {
         int[][] directions = {{0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}};
 
         int[] direction = directions[random.nextInt(directions.length)];
-        int directionX = direction[0];
-        int directionY = direction[1];
+        int newX = direction[0];
+        int newY = direction[1];
 
-        b.throwBall(directionX, directionY);
+        if(b.getX() + newX == this.X && b.getY() + newY == this.Y) return;
+
+        b.throwBall(direction[0], direction[1]);
+    }
+
+    public void gameOver() {
+        this.isActive = false;
     }
 
     @Override

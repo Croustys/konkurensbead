@@ -32,6 +32,7 @@ public class Room {
         System.out.flush();
         System.out.print("\u001B[0;0H");
 
+        System.out.println(this.getPlayerCount());
         System.out.print("+");
         for (int i = 0; i < width; i++) {
             System.out.print("-");
@@ -61,7 +62,7 @@ public class Room {
         return playerCount;
     }
 
-    public synchronized void placeObject(Object obj, int row, int col) {
+    public void placeObject(Object obj, int row, int col) {
         matrix[row][col] = obj;
         if (obj instanceof Player) {
             playerCount++;
@@ -69,15 +70,36 @@ public class Room {
     }
 
     public synchronized void moveObject(int fromX, int fromY, int toX, int toY) {
-        matrix[toX][toY] = matrix[fromX][fromY];
-        matrix[fromX][fromY] = new Empty();
+        synchronized (matrix) {
+            matrix[toX][toY] = matrix[fromX][fromY];
+            matrix[fromX][fromY] = new Empty();
+        }
+
     }
 
-    public synchronized void removeObject(int row, int col) {
-        Object obj = matrix[row][col];
-        matrix[row][col] = new Empty();
-        if (obj instanceof Player) {
-            playerCount--;
+    public void removeObject(int row, int col) {
+        synchronized (matrix) {
+            Object obj = matrix[row][col];
+            matrix[row][col] = new Empty();
+            if (obj instanceof Player) {
+                playerCount--;
+                ((Player) obj).isActive = false;
+            }
         }
+
+    }
+
+    public String getLastPlayerStanding() {
+        String name = "";
+        for (int i = 0; i < this.width; i++) {
+            for (int j = 0; j < this.height; j++) {
+                if (matrix[i][j] instanceof Player) {
+                    name = matrix[i][j].toString();
+                    ((Player) matrix[i][j]).gameOver();
+                    this.removeObject(i, j);
+                }
+            }
+        }
+        return name;
     }
 }

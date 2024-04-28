@@ -27,35 +27,48 @@ class Ball extends Thread {
             }
 
             if (isMoving) {
-                int width = this.room.getWidth();
-                int height = this.room.getHeight();
-                if (this.X == 0 || this.X == width - 1 || this.Y == 0 || this.Y == height - 1) {
-                    this.isMoving = false;
-                } else {
+                synchronized (this.room) {
                     int nextX = this.X + this.directionX;
                     int nextY = this.Y + this.directionY;
 
-                    if (this.room.getObjectAtPosition(nextX, nextY) instanceof Player) {
-                        this.room.removeObject(nextX, nextY);
+                    int width = this.room.getWidth();
+                    int height = this.room.getHeight();
+
+                    if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height) {
+                        this.isMoving = false;
+                    } else {
+                        if (this.room.getObjectAtPosition(nextX, nextY) instanceof Player) {
+                            ((Player) this.room.getObjectAtPosition(nextX, nextY)).gameOver();
+                            this.room.removeObject(nextX, nextY);
+                        }
                         this.room.moveObject(this.X, this.Y, nextX, nextY);
                         this.X = nextX;
                         this.Y = nextY;
                     }
                 }
-
             }
 
         }
     }
 
     public synchronized void throwBall(int directionX, int directionY) {
-        this.directionX = directionX;
-        this.directionY = directionY;
-        isMoving = true;
+        synchronized (this.room) {
+            this.directionX = directionX;
+            this.directionY = directionY;
+            isMoving = true;
+        }
     }
 
     public boolean isMoving() {
         return isMoving;
+    }
+
+    public int getX() {
+        return this.X;
+    }
+
+    public int getY() {
+        return this.Y;
     }
 
 

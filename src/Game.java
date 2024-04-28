@@ -9,8 +9,8 @@ public class Game {
     private ArrayList<Player> players = new ArrayList<>();
 
     public void main() {
-        this.room = new Room(4, 5);
-        this.ball = new Ball(room, 1, 1);
+        this.room = new Room(5, 5);
+        this.ball = new Ball(room, 2, 2);
         for (int i = 0; i < 10; i++) {
             Player tempPlayer = new Player(alphabet.substring(i, i + 1), room);
             tempPlayer.start();
@@ -26,6 +26,7 @@ public class Game {
                 e.printStackTrace();
             }
         }
-        // print winner player's name
+        room.printRoom();
+        System.out.println("Winner: " + this.room.getLastPlayerStanding());
     }
 }
