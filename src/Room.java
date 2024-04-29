@@ -1,8 +1,10 @@
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Room {
     private int width;
     private int height;
     private final Object[][] matrix;
-    private int playerCount = 0;
+    private AtomicInteger playerCount = new AtomicInteger(0);
 
     public Room(int width, int height) {
         this.width = width;
@@ -59,13 +61,13 @@ public class Room {
     }
 
     public int getPlayerCount() {
-        return playerCount;
+        return playerCount.get();
     }
 
-    public void placeObject(Object obj, int row, int col) {
+    public synchronized void placeObject(Object obj, int row, int col) {
         matrix[row][col] = obj;
         if (obj instanceof Player) {
-            playerCount++;
+            playerCount.incrementAndGet();
         }
     }
 
@@ -74,7 +76,6 @@ public class Room {
             matrix[toX][toY] = matrix[fromX][fromY];
             matrix[fromX][fromY] = new Empty();
         }
-
     }
 
     public void removeObject(int row, int col) {
@@ -82,7 +83,7 @@ public class Room {
             Object obj = matrix[row][col];
             matrix[row][col] = new Empty();
             if (obj instanceof Player) {
-                playerCount--;
+                playerCount.decrementAndGet();
                 ((Player) obj).isActive = false;
             }
         }

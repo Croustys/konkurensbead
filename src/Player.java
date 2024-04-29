@@ -118,6 +118,7 @@ class Player extends Thread {
     }
 
     public void gameOver() {
+        this.room.removeObject(this.X, this.Y);
         this.isActive = false;
     }
 

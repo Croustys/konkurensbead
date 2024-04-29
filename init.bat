@@ -1,3 +1,4 @@
-javac src/*.java
+cd src
+javac *.java
 
-java -cp src Main
+java Game

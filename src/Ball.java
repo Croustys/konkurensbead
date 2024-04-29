@@ -6,54 +6,65 @@ class Ball extends Thread {
     private int Y;
     private int directionX;
     private int directionY;
-    private boolean isMoving = false;
+    private volatile boolean isMoving = false;
+
+    private final Object lock = new Object();
 
     public Ball(Room room, int x, int y) {
         this.room = room;
         this.X = x;
         this.Y = y;
-        this.directionX = x;
-        this.directionY = y;
+        this.directionX = 0;
+        this.directionY = 0;
         this.room.placeObject(this, x, y);
     }
 
     @Override
     public void run() {
+
         while (this.room.getPlayerCount() > 1) {
             try {
-                sleep(TIMEOUT);
+                Thread.sleep(TIMEOUT);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
 
+
             if (isMoving) {
-                synchronized (this.room) {
-                    int nextX = this.X + this.directionX;
-                    int nextY = this.Y + this.directionY;
-
-                    int width = this.room.getWidth();
-                    int height = this.room.getHeight();
-
-                    if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height) {
+                int nextX = this.X + this.directionX;
+                int nextY = this.Y + this.directionY;
+                if (this.hasReachedWall() && invalidNextStep(nextX, nextY)) this.isMoving = false;
+                else {
+                    Object nextPlace = this.room.getObjectAtPosition(nextX, nextY);
+                    if (nextPlace instanceof Player) {
+                        ((Player) nextPlace).gameOver();
                         this.isMoving = false;
                     } else {
-                        if (this.room.getObjectAtPosition(nextX, nextY) instanceof Player) {
-                            ((Player) this.room.getObjectAtPosition(nextX, nextY)).gameOver();
-                            this.room.removeObject(nextX, nextY);
-                            this.isMoving = false;
-                        }
+
                         this.room.moveObject(this.X, this.Y, nextX, nextY);
                         this.X = nextX;
                         this.Y = nextY;
                     }
                 }
             }
-
         }
     }
 
-    public synchronized void throwBall(int directionX, int directionY) {
-        synchronized (this.room) {
+    public boolean hasReachedWall() {
+        int width = this.room.getWidth();
+        int height = this.room.getHeight();
+        return this.X == 0 || this.X == width - 1 || this.Y == 0 || this.Y == height - 1;
+    }
+
+    public boolean invalidNextStep(int nx, int ny) {
+        int width = this.room.getWidth();
+        int height = this.room.getHeight();
+        return nx < 0 || ny < 0 || nx >= width || ny >= height;
+    }
+
+    public void throwBall(int directionX, int directionY) {
+        if (this.isMoving) return;
+        synchronized (lock) {
             this.directionX = directionX;
             this.directionY = directionY;
             isMoving = true;
