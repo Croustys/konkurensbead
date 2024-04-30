@@ -40,7 +40,6 @@ public class Room {
             System.out.flush();
             System.out.print("\u001B[0;0H");
 
-            System.out.println(this.getPlayerCount());
             System.out.print("+");
             for (int i = 0; i < width; i++) {
                 System.out.print("-");
