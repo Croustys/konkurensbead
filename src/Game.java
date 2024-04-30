@@ -8,11 +8,17 @@ public class Game {
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static void main(String[] args) {
         Room room = new Room(ROOM_WIDTH, ROOM_HEIGHT);
-        Ball ball = new Ball(room, 1 + ROOM_WIDTH / 2, 1 + ROOM_HEIGHT / 2);
+        Ball ball = new Ball(room, ROOM_WIDTH / 2, ROOM_HEIGHT / 2);
         for (int i = 0; i < INITIAL_PLAYER_COUNT; i++) {
             new Player(ALPHABET.substring(i, i + 1), room).start();
         }
         ball.start();
+
+        try{
+            Thread.sleep(2*TIMEOUT);
+        }catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         while (room.getPlayerCount() > 1) {
             try {

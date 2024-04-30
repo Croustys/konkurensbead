@@ -40,7 +40,6 @@ class Ball extends Thread {
                         ((Player) nextPlace).gameOver();
                         this.isMoving = false;
                     } else {
-
                         this.room.moveObject(this.X, this.Y, nextX, nextY);
                         this.X = nextX;
                         this.Y = nextY;
