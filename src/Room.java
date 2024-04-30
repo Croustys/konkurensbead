@@ -1,10 +1,14 @@
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Room {
     private int width;
     private int height;
     private final Object[][] matrix;
     private AtomicInteger playerCount = new AtomicInteger(0);
+    private Lock lock = new ReentrantLock();
+
 
     public Room(int width, int height) {
         this.width = width;
@@ -30,34 +34,45 @@ public class Room {
     }
 
     public void printRoom() {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-        System.out.print("\u001B[0;0H");
+        lock.lock();
+        try {
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
+            System.out.print("\u001B[0;0H");
 
-        System.out.println(this.getPlayerCount());
-        System.out.print("+");
-        for (int i = 0; i < width; i++) {
-            System.out.print("-");
-        }
-        System.out.println("+");
-
-        for (int i = 0; i < width; i++) {
-            System.out.print("|");
-            for (int j = 0; j < height; j++) {
-                System.out.print(matrix[i][j].toString());
+            System.out.println(this.getPlayerCount());
+            System.out.print("+");
+            for (int i = 0; i < width; i++) {
+                System.out.print("-");
             }
-            System.out.println("|");
-        }
+            System.out.println("+");
 
-        System.out.print("+");
-        for (int i = 0; i < width; i++) {
-            System.out.print("-");
+            for (int i = 0; i < width; i++) {
+                System.out.print("|");
+                for (int j = 0; j < height; j++) {
+                    System.out.print(matrix[i][j].toString());
+                }
+                System.out.println("|");
+            }
+
+            System.out.print("+");
+            for (int i = 0; i < width; i++) {
+                System.out.print("-");
+            }
+            System.out.println("+");
+        } finally {
+            lock.unlock();
         }
-        System.out.println("+");
     }
 
     public synchronized Object getObjectAtPosition(int x, int y) {
-        return matrix[x][y];
+        lock.lock();
+        try {
+
+            return matrix[x][y];
+        } finally {
+            lock.unlock();
+        }
     }
 
     public int getPlayerCount() {
@@ -72,20 +87,28 @@ public class Room {
     }
 
     public synchronized void moveObject(int fromX, int fromY, int toX, int toY) {
-        synchronized (matrix) {
+        lock.lock();
+        try {
+
             matrix[toX][toY] = matrix[fromX][fromY];
             matrix[fromX][fromY] = new Empty();
+        } finally {
+            lock.unlock();
         }
     }
 
-    public void removeObject(int row, int col) {
-        synchronized (matrix) {
+    public synchronized void removeObject(int row, int col) {
+        lock.lock();
+        try {
+
             Object obj = matrix[row][col];
             matrix[row][col] = new Empty();
             if (obj instanceof Player) {
                 playerCount.decrementAndGet();
                 ((Player) obj).isActive = false;
             }
+        } finally {
+            lock.unlock();
         }
 
     }
