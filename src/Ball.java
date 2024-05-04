@@ -1,13 +1,11 @@
 class Ball extends Thread {
     private static final int TIMEOUT = 50;
-
     private final Room room;
     private int X;
     private int Y;
     private int directionX;
     private int directionY;
     private volatile boolean isMoving = false;
-
     private final Object lock = new Object();
 
     public Ball(Room room, int x, int y) {
@@ -21,7 +19,6 @@ class Ball extends Thread {
 
     @Override
     public void run() {
-
         while (this.room.getPlayerCount() > 1) {
             try {
                 Thread.sleep(TIMEOUT);
@@ -35,14 +32,16 @@ class Ball extends Thread {
                 int nextY = this.Y + this.directionY;
                 if (this.hasReachedWall() && invalidNextStep(nextX, nextY)) this.isMoving = false;
                 else {
-                    Object nextPlace = this.room.getObjectAtPosition(nextX, nextY);
-                    if (nextPlace instanceof Player) {
-                        ((Player) nextPlace).gameOver();
-                        this.isMoving = false;
-                    } else {
-                        this.room.moveObject(this.X, this.Y, nextX, nextY);
-                        this.X = nextX;
-                        this.Y = nextY;
+                    synchronized (room) {
+                        Object nextPlace = this.room.getObjectAtPosition(nextX, nextY);
+                        if (nextPlace instanceof Player) {
+                            ((Player) nextPlace).gameOver();
+                            this.isMoving = false;
+                        } else {
+                            this.room.moveObject(this.X, this.Y, nextX, nextY);
+                            this.X = nextX;
+                            this.Y = nextY;
+                        }
                     }
                 }
             }

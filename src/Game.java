@@ -1,11 +1,10 @@
-import java.util.ArrayList;
-
 public class Game {
     private static final int TIMEOUT = 50;
     private static final int ROOM_WIDTH = 5;
     private static final int ROOM_HEIGHT = 5;
     private static final int INITIAL_PLAYER_COUNT = 10;
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
     public static void main(String[] args) {
         Room room = new Room(ROOM_WIDTH, ROOM_HEIGHT);
         Ball ball = new Ball(room, ROOM_WIDTH / 2, ROOM_HEIGHT / 2);
@@ -14,9 +13,9 @@ public class Game {
         }
         ball.start();
 
-        try{
-            Thread.sleep(2*TIMEOUT);
-        }catch (InterruptedException e) {
+        try {
+            Thread.sleep(2 * TIMEOUT);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 

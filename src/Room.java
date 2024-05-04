@@ -3,11 +3,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Room {
-    private int width;
-    private int height;
+    private final int width;
+    private final int height;
     private final Object[][] matrix;
-    private AtomicInteger playerCount = new AtomicInteger(0);
-    private Lock lock = new ReentrantLock();
+    private final AtomicInteger playerCount = new AtomicInteger(0);
+    private final Lock lock = new ReentrantLock();
 
 
     public Room(int width, int height) {
@@ -64,10 +64,9 @@ public class Room {
         }
     }
 
-    public synchronized Object getObjectAtPosition(int x, int y) {
+    public Object getObjectAtPosition(int x, int y) {
         lock.lock();
         try {
-
             return matrix[x][y];
         } finally {
             lock.unlock();
@@ -85,10 +84,9 @@ public class Room {
         }
     }
 
-    public synchronized void moveObject(int fromX, int fromY, int toX, int toY) {
+    public void moveObject(int fromX, int fromY, int toX, int toY) {
         lock.lock();
         try {
-
             matrix[toX][toY] = matrix[fromX][fromY];
             matrix[fromX][fromY] = new Empty();
         } finally {
@@ -96,10 +94,9 @@ public class Room {
         }
     }
 
-    public synchronized void removeObject(int row, int col) {
+    public void removeObject(int row, int col) {
         lock.lock();
         try {
-
             Object obj = matrix[row][col];
             matrix[row][col] = new Empty();
             if (obj instanceof Player) {

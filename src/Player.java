@@ -2,12 +2,10 @@ import java.util.Random;
 
 class Player extends Thread {
     private static final int TIMEOUT = 100;
-
     private final Room room;
     public boolean isActive = true;
     private int X;
     private int Y;
-
     private final String name;
 
     public Player(String name, Room room) {
@@ -68,29 +66,26 @@ class Player extends Thread {
     }
 
     private Object getBallNearby() {
-        synchronized (room) {
-            int roomWidth = this.room.getWidth();
-            int roomHeight = this.room.getHeight();
+        int roomWidth = this.room.getWidth();
+        int roomHeight = this.room.getHeight();
 
-            Object top = (this.Y > 0) ? this.room.getObjectAtPosition(this.X, this.Y - 1) : null;
-            if (top instanceof Ball) {
-                return top;
-            }
-            Object right = (this.X < roomWidth - 1) ? this.room.getObjectAtPosition(this.X + 1, this.Y) : null;
-            if (right instanceof Ball) {
-                return right;
-            }
-            Object bottom = (this.Y < roomHeight - 1) ? this.room.getObjectAtPosition(this.X, this.Y + 1) : null;
-            if (bottom instanceof Ball) {
-                return bottom;
-            }
-            Object left = (this.X > 0) ? this.room.getObjectAtPosition(this.X - 1, this.Y) : null;
-            if (left instanceof Ball) {
-                return left;
-            }
-            return null;
+        Object top = (this.Y > 0) ? this.room.getObjectAtPosition(this.X, this.Y - 1) : null;
+        if (top instanceof Ball) {
+            return top;
         }
-
+        Object right = (this.X < roomWidth - 1) ? this.room.getObjectAtPosition(this.X + 1, this.Y) : null;
+        if (right instanceof Ball) {
+            return right;
+        }
+        Object bottom = (this.Y < roomHeight - 1) ? this.room.getObjectAtPosition(this.X, this.Y + 1) : null;
+        if (bottom instanceof Ball) {
+            return bottom;
+        }
+        Object left = (this.X > 0) ? this.room.getObjectAtPosition(this.X - 1, this.Y) : null;
+        if (left instanceof Ball) {
+            return left;
+        }
+        return null;
     }
 
     private void kick(Ball b) {
