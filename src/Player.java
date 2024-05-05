@@ -32,7 +32,7 @@ class Player extends Thread {
             try {
                 sleep(TIMEOUT);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
             this.move();
         }
@@ -66,55 +66,61 @@ class Player extends Thread {
     }
 
     private Object getBallNearby() {
-        int roomWidth = this.room.getWidth();
-        int roomHeight = this.room.getHeight();
+        synchronized (room) {
+            int roomWidth = this.room.getWidth();
+            int roomHeight = this.room.getHeight();
 
-        Object top = (this.Y > 0) ? this.room.getObjectAtPosition(this.X, this.Y - 1) : null;
-        if (top instanceof Ball) {
-            return top;
+            Object top = (this.Y > 0) ? this.room.getObjectAtPosition(this.X, this.Y - 1) : null;
+            if (top instanceof Ball) {
+                return top;
+            }
+            Object right = (this.X < roomWidth - 1) ? this.room.getObjectAtPosition(this.X + 1, this.Y) : null;
+            if (right instanceof Ball) {
+                return right;
+            }
+            Object bottom = (this.Y < roomHeight - 1) ? this.room.getObjectAtPosition(this.X, this.Y + 1) : null;
+            if (bottom instanceof Ball) {
+                return bottom;
+            }
+            Object left = (this.X > 0) ? this.room.getObjectAtPosition(this.X - 1, this.Y) : null;
+            if (left instanceof Ball) {
+                return left;
+            }
+            return null;
         }
-        Object right = (this.X < roomWidth - 1) ? this.room.getObjectAtPosition(this.X + 1, this.Y) : null;
-        if (right instanceof Ball) {
-            return right;
-        }
-        Object bottom = (this.Y < roomHeight - 1) ? this.room.getObjectAtPosition(this.X, this.Y + 1) : null;
-        if (bottom instanceof Ball) {
-            return bottom;
-        }
-        Object left = (this.X > 0) ? this.room.getObjectAtPosition(this.X - 1, this.Y) : null;
-        if (left instanceof Ball) {
-            return left;
-        }
-        return null;
     }
 
     private void kick(Ball b) {
-        int ballX = b.getX();
-        int ballY = b.getY();
+        synchronized (room) {
+            int ballX = b.getX();
+            int ballY = b.getY();
 
-        Random random = new Random();
-        int[][] directions = {{0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}};
+            Random random = new Random();
+            int[][] directions = {{0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}};
 
-        int randomIndex = random.nextInt(directions.length);
-        int[] direction = directions[randomIndex];
-        int newX = direction[0];
-        int newY = direction[1];
+            int randomIndex = random.nextInt(directions.length);
+            int[] direction = directions[randomIndex];
+            int newX = direction[0];
+            int newY = direction[1];
 
-        if (ballX + newX == this.X && ballY + newY == this.Y) {
-            int oldRandom = randomIndex;
-            do {
-                randomIndex = random.nextInt(directions.length);
-            } while (randomIndex == oldRandom);
+            if (ballX + newX == this.X && ballY + newY == this.Y) {
+                int oldRandom = randomIndex;
+                do {
+                    randomIndex = random.nextInt(directions.length);
+                } while (randomIndex == oldRandom);
+            }
+
+            direction = directions[randomIndex];
+
+            b.throwBall(direction[0], direction[1]);
         }
-
-        direction = directions[randomIndex];
-
-        b.throwBall(direction[0], direction[1]);
     }
 
     public void gameOver() {
-        this.room.removeObject(this.X, this.Y);
-        this.isActive = false;
+        synchronized (room) {
+            this.room.removeObject(this.X, this.Y);
+            this.isActive = false;
+        }
     }
 
     @Override
