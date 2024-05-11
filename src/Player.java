@@ -1,4 +1,4 @@
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 class Player extends Thread {
     private static final int TIMEOUT = 100;
@@ -15,14 +15,13 @@ class Player extends Thread {
 
     @Override
     public void run() {
-        Random random = new Random();
         int roomWidth = this.room.getWidth();
         int roomHeight = this.room.getHeight();
 
         synchronized (room) {
             do {
-                this.X = random.nextInt(roomWidth);
-                this.Y = random.nextInt(roomHeight);
+                this.X = ThreadLocalRandom.current().nextInt(roomWidth);
+                this.Y = ThreadLocalRandom.current().nextInt(roomHeight);
             } while (this.room.getObjectAtPosition(this.X, this.Y) instanceof Player || this.room.getObjectAtPosition(this.X, this.Y) instanceof Ball);
 
             this.room.placeObject(this, this.X, this.Y);
@@ -39,19 +38,18 @@ class Player extends Thread {
     }
 
     private void move() {
-        int roomWidth = this.room.getWidth();
-        int roomHeight = this.room.getHeight();
-        Random random = new Random();
+        synchronized (room) {
+            int roomWidth = this.room.getWidth();
+            int roomHeight = this.room.getHeight();
 
-        int[][] directions = {{0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}};
+            int[][] directions = {{0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}};
 
-        int[] direction = directions[random.nextInt(directions.length)];
+            int[] direction = directions[ThreadLocalRandom.current().nextInt(directions.length)];
 
-        int newPlayerX = this.X + direction[0];
-        int newPlayerY = this.Y + direction[1];
+            int newPlayerX = this.X + direction[0];
+            int newPlayerY = this.Y + direction[1];
 
-        if (newPlayerX >= 0 && newPlayerX < roomWidth && newPlayerY >= 0 && newPlayerY < roomHeight) {
-            synchronized (room) {
+            if (newPlayerX >= 0 && newPlayerX < roomWidth && newPlayerY >= 0 && newPlayerY < roomHeight) {
                 if (room.getObjectAtPosition(newPlayerX, newPlayerY) instanceof Empty) {
                     room.moveObject(this.X, this.Y, newPlayerX, newPlayerY);
                     this.X = newPlayerX;
@@ -95,10 +93,9 @@ class Player extends Thread {
             int ballX = b.getX();
             int ballY = b.getY();
 
-            Random random = new Random();
             int[][] directions = {{0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}};
 
-            int randomIndex = random.nextInt(directions.length);
+            int randomIndex = ThreadLocalRandom.current().nextInt(directions.length);
             int[] direction = directions[randomIndex];
             int newX = direction[0];
             int newY = direction[1];
@@ -106,7 +103,7 @@ class Player extends Thread {
             if (ballX + newX == this.X && ballY + newY == this.Y) {
                 int oldRandom = randomIndex;
                 do {
-                    randomIndex = random.nextInt(directions.length);
+                    randomIndex = ThreadLocalRandom.current().nextInt(directions.length);
                 } while (randomIndex == oldRandom);
             }
 

@@ -28,6 +28,8 @@ public class Game {
             }
         }
         room.printRoom();
-        System.out.println("Winner: " + room.getLastPlayerStanding());
+        synchronized (room) {
+            System.out.println("Winner: " + room.getLastPlayerStanding());
+        }
     }
 }

@@ -1,3 +1,5 @@
+import java.util.concurrent.atomic.AtomicBoolean;
+
 class Ball extends Thread {
     private static final int TIMEOUT = 50;
     private final Room room;
@@ -5,8 +7,7 @@ class Ball extends Thread {
     private int Y;
     private int directionX;
     private int directionY;
-    private volatile boolean isMoving = false;
-    private final Object lock = new Object();
+    private static final AtomicBoolean isMoving = new AtomicBoolean(false);
 
     public Ball(Room room, int x, int y) {
         this.room = room;
@@ -27,16 +28,16 @@ class Ball extends Thread {
             }
 
 
-            if (isMoving) {
-                int nextX = this.X + this.directionX;
-                int nextY = this.Y + this.directionY;
-                if (this.hasReachedWall() && invalidNextStep(nextX, nextY)) this.isMoving = false;
-                else {
-                    synchronized (room) {
+            if (isMoving.get()) {
+                synchronized (room) {
+                    int nextX = this.X + this.directionX;
+                    int nextY = this.Y + this.directionY;
+                    if (this.hasReachedWall() && invalidNextStep(nextX, nextY)) isMoving.set(false);
+                    else {
                         Object nextPlace = this.room.getObjectAtPosition(nextX, nextY);
                         if (nextPlace instanceof Player) {
                             ((Player) nextPlace).gameOver();
-                            this.isMoving = false;
+                            isMoving.set(false);
                         } else {
                             this.room.moveObject(this.X, this.Y, nextX, nextY);
                             this.X = nextX;
@@ -60,17 +61,15 @@ class Ball extends Thread {
         return nx < 0 || ny < 0 || nx >= width || ny >= height;
     }
 
-    public void throwBall(int directionX, int directionY) {
-        if (this.isMoving) return;
-        synchronized (lock) {
-            this.directionX = directionX;
-            this.directionY = directionY;
-            isMoving = true;
-        }
+    public synchronized void throwBall(int directionX, int directionY) {
+        if (isMoving.get()) return;
+        this.directionX = directionX;
+        this.directionY = directionY;
+        isMoving.set(true);
     }
 
     public boolean isMoving() {
-        return isMoving;
+        return isMoving.get();
     }
 
     public int getX() {
